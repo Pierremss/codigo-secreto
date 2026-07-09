@@ -104,7 +104,10 @@ int main(void){
                 break;
             case 'X':
             case 'x':
+            //preciso verificar se essa logica realmente esta certa, e se o jogador tentar jogar outor jogo antes de sair? 
                 printf("\nSaindo do jogo...\n");
+                liberaMatriz(partidaAtual.historicoJogadas, partidaAtual.maxTentativas);
+                free(partidaAtual.sequenciaSecreta);
                 break;
             default:
                 printf("\nOpção inválida. Tente novamente.\n");
@@ -194,12 +197,19 @@ void novoJogo(Jogo *partidaAtual){
 
             printf("%s", dicaAtual);
             
-            if(strcmp(dicaAtual, "CCCC") == 0){
+            //verificando se o jogador ganhou
+            int win = 0;
+            for (int i = 0; i < partidaAtual->tamanhoSequencia; i++){
+                if (dicaAtual[i] == 'C')
+                    win++;
+            }
+            if(win == partidaAtual->tamanhoSequencia){
                 printf("\n\nParabéns! Você acertou a sequência secreta!\n");
                 limparBuffer();
                 getchar();
                 return;
             }
+           
             printf("\n");
         }
     }
@@ -298,5 +308,18 @@ int **alocaMatriz(int i, int j){
             matriz[k] = malloc(j * sizeof(int));
         return matriz;
     }
+}
+
+void liberaMatriz(int **matriz, int i){
+    if(matriz == NULL)
+        return;
+
+    for (int a = 0; a < i; a++)
+        if(matriz[a] != NULL)
+            free(matriz[a]);
+        else
+            continue;
+
+    free(matriz);
 }
 
