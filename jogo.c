@@ -1,44 +1,4 @@
-//jogo do codigo secreto
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-
-#define TAM 51
-
-//struct do arquivo de ranking
-typedef struct{
-    char nome[TAM];
-    int nivel;
-    int tentativas;
-} Ranking;
-
-//struct do jogo
-typedef struct {
-    char nomeJogador[TAM];
-    int nivel;               // 1, 2 ou 3
-    int tamanhoSequencia;   // 4, 5 ou 6
-    int maxTentativas;      // 10, 12 ou 15
-    int tentativasUsadas;   // Contador de rodadas
-    int *sequenciaSecreta;  // Ponteiro para o vetor alocado
-    int **historicoJogadas; // Ponteiro para a matriz alocada
-} Jogo;
-
-int *alocaVetor(int i);
-int **alocaMatriz(int i, int j);
-void liberaMatriz(int **matriz, int i);
-void geraSequenciaAleatoria(Jogo *partidaAtual); //gera o codigo secreto e retorna como vetor de inteiros
-void novoJogo(Jogo *partidaAtual);
-void carregaJogo(Jogo *jogo, char nomeArquivo[TAM]);
-void salvaJogo(Jogo *jogo, char nomeArquivo[TAM]);
-void exibeMenuPrincipal();
-void exibeAjuda();
-void exibeRanking();
-void atualizaRanking(char nome[TAM], int nivel, int tentativas);
-char* comparaCombinacao(int tentativa[], int secreta[], char dica[], int tamanho);
-void exibeHistorico(Jogo *jogo);
-void definirDifuculdade(Jogo *partidaAtual);
+#include "jogo.h"
 
 void limparBuffer(void) {
     int c;
@@ -63,56 +23,6 @@ void inicializaJogo(Jogo *partidaAtual){
     partidaAtual->tentativasUsadas = 0;
     partidaAtual->sequenciaSecreta = NULL;
     partidaAtual->historicoJogadas = NULL;
-}
-
-int main(void){
-    srand(time(NULL)); //semente para gerar numeros aleatorios
-    char opcao = ' ';
-
-    //Lembrete para nao esquecer de iniciar a struct
-    do{
-        Jogo partidaAtual;
-        inicializaJogo(&partidaAtual);
-
-        exibeMenuPrincipal();
-
-        printf("\nDigite a opção desejada: ");
-        scanf(" %c", &opcao);
-        limparBuffer();
-
-        switch (opcao){
-            case 'A':
-            case 'a':
-                exibeAjuda();
-                getchar();
-                break;
-            case 'N':
-            case 'n':
-                novoJogo(&partidaAtual);
-                break;
-            case 'C':
-            case 'c':
-                //carregaJogo();
-                break;
-            case 'S':
-            case 's':
-                //salvaJogo();
-                break;
-            case 'R':
-            case 'r':
-                exibeRanking();
-                break;
-            case 'X':
-            case 'x':
-            //preciso verificar se essa logica realmente esta certa, e se o jogador tentar jogar outor jogo antes de sair? 
-                printf("\nSaindo do jogo...\n");
-                liberaMatriz(partidaAtual.historicoJogadas, partidaAtual.maxTentativas);
-                free(partidaAtual.sequenciaSecreta);
-                break;
-            default:
-                printf("\nOpção inválida. Tente novamente.\n");
-        }
-    } while (opcao != 'X' && opcao != 'x');
 }
 
 void exibeMenuPrincipal(){
@@ -194,7 +104,6 @@ void novoJogo(Jogo *partidaAtual){
             //preciso voltar aqui mais tarde para otimizar a dicaAtual, eu criei essa variavel mas nao estou usando ela, estou chamando a funcao comparaCombinacao() duas vezes, uma para gerar a dica e outra para imprimir a dica, preciso otimizar isso
 
             comparaCombinacao(partidaAtual->historicoJogadas[i], partidaAtual->sequenciaSecreta, dicaAtual, partidaAtual->tamanhoSequencia);
-
             printf("%s", dicaAtual);
             
             //verificando se o jogador ganhou
