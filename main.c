@@ -3,11 +3,10 @@
 int main(void){
     srand(time(NULL)); //semente para gerar numeros aleatorios
     char opcao = ' ';
+    Jogo partidaAtual;
+    inicializaJogo(&partidaAtual);
 
-    //Lembrete para nao esquecer de iniciar a struct
     do{
-        Jogo partidaAtual;
-        inicializaJogo(&partidaAtual);
 
         exibeMenuPrincipal();
 
@@ -16,6 +15,16 @@ int main(void){
         limparBuffer();
 
         switch (opcao){
+            case 'V':
+            case 'v':
+                if(partidaAtual.nivel == 0){
+                    printf("\nNenhum jogo em andamento. Por favor, inicie um novo jogo.\n");
+                    getchar();
+                }else{
+                    printf("Voltando ao jogo em andamento...\n");
+                    jogo(&partidaAtual);
+                }
+                break;
             case 'A':
             case 'a':
                 exibeAjuda();
@@ -23,6 +32,7 @@ int main(void){
                 break;
             case 'N':
             case 'n':
+                liberarJogo(&partidaAtual); //liberando a memoria do jogo anterior antes de iniciar um novo
                 novoJogo(&partidaAtual);
                 break;
             case 'C':
@@ -41,8 +51,7 @@ int main(void){
             case 'x':
             //preciso verificar se essa logica realmente esta certa, e se o jogador tentar jogar outor jogo antes de sair? 
                 printf("\nSaindo do jogo...\n");
-                liberaMatriz(partidaAtual.historicoJogadas, partidaAtual.maxTentativas);
-                free(partidaAtual.sequenciaSecreta);
+                liberarJogo(&partidaAtual);
                 break;
             default:
                 printf("\nOpção inválida. Tente novamente.\n");

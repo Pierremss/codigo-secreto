@@ -28,6 +28,7 @@ void inicializaJogo(Jogo *partidaAtual){
 void exibeMenuPrincipal(){
     printf("\n==============================\nJOGO CODIGO SECRETO DE CORES\n==============================\n");
     printf("\nOpções de jogo:\n\n");
+    printf("V - Voltar ao jogo em andamento\n");
     printf("A - Ajuda\n");
     printf("N - Novo Jogo\n");
     printf("C - Carregar Jogo\n");
@@ -61,7 +62,7 @@ void geraSequenciaAleatoria(Jogo *partidaAtual){
 }
 
 void novoJogo(Jogo *partidaAtual){
-    partidaAtual->tentativasUsadas = 0; //reinicia o contador de tentativas
+    inicializaJogo(partidaAtual);
 
     printf("\nDigite seu nome: ");
     scanf("%s", partidaAtual->nomeJogador);
@@ -74,39 +75,45 @@ void novoJogo(Jogo *partidaAtual){
 
     partidaAtual->historicoJogadas = alocaMatriz(partidaAtual->maxTentativas, partidaAtual->tamanhoSequencia); //aloca a matriz de historico de jogadas
 
-    //com tudo pronto, agora vou comecar a partida
+     //com tudo pronto, agora vou comecar a partida
+    jogo(partidaAtual);
+}
+void jogo(Jogo *partidaAtual){
+          
+    int tentativaAtual[partidaAtual->tamanhoSequencia];
+    char dicaAtual[partidaAtual->tamanhoSequencia + 1];
+    
+    //exibe o historico cseja uma partida em andamento, ou seja, se o jogador ja tiver feito alguma tentativa
+    if(partidaAtual->tentativasUsadas > 0)
+            exibeHistorico(partidaAtual, dicaAtual);
+
     while(partidaAtual->tentativasUsadas < partidaAtual->maxTentativas){
-        int tentativaAtual[partidaAtual->tamanhoSequencia];
-        char dicaAtual[partidaAtual->tamanhoSequencia + 1]; //+1 para o caractere nulo no final da string
+        // int tentativaAtual[partidaAtual->tamanhoSequencia];
+        // char dicaAtual[partidaAtual->tamanhoSequencia + 1]; //+1 para o caractere nulo no final da string
         zeraVetorInt(tentativaAtual, partidaAtual->tamanhoSequencia);
         zeraVetorChar(dicaAtual, partidaAtual->tamanhoSequencia + 1 );
-       
+
         printf("\nTentativa %d de %d", partidaAtual->tentativasUsadas + 1, partidaAtual->maxTentativas);
         printf("\nDigite %d cores (0 para voltar ao menu):", partidaAtual->tamanhoSequencia);
        
-        //lendo a tentativa
-        for(int i = 0; i < partidaAtual->tamanhoSequencia; i++)
+        //lendo a tentativa e validando se o jogador quer voltar ao menu
+        for(int i = 0; i < partidaAtual->tamanhoSequencia; i++){
             scanf("%d", &tentativaAtual[i]);
-
+            if(tentativaAtual[i] == 0){
+                printf("\nVoltando ao menu principal...\n");
+                return;
+            }
+        }
         //salvando no historico de jogadas
         for(int i = 0; i < partidaAtual->tamanhoSequencia; i++)
             partidaAtual->historicoJogadas[partidaAtual->tentativasUsadas][i] = tentativaAtual[i];
 
-        // comparaCombinacao(tentativaAtual, partidaAtual->sequenciaSecreta, dicaAtual, partidaAtual->tamanhoSequencia);
-        partidaAtual->tentativasUsadas++;
-        printf("\nResultado:\n");
-        for (int i = 0; i < partidaAtual->tentativasUsadas; i++) {
-            printf("Rodada %d:  ", i+1);
-            for (int j = 0; j < partidaAtual->tamanhoSequencia; j++) {
-                printf("%d ", partidaAtual->historicoJogadas[i][j]);
-            }
+        partidaAtual->tentativasUsadas++; // incrementando o contador de tentativas usadas
+        // exibeHistorico(partidaAtual, dicaAtual);
 
-            //preciso voltar aqui mais tarde para otimizar a dicaAtual, eu criei essa variavel mas nao estou usando ela, estou chamando a funcao comparaCombinacao() duas vezes, uma para gerar a dica e outra para imprimir a dica, preciso otimizar isso
+            exibeHistorico(partidaAtual, dicaAtual);
 
-            comparaCombinacao(partidaAtual->historicoJogadas[i], partidaAtual->sequenciaSecreta, dicaAtual, partidaAtual->tamanhoSequencia);
-            printf("%s", dicaAtual);
-            
-            //verificando se o jogador ganhou
+         //verificando se o jogador ganhou
             int win = 0;
             for (int i = 0; i < partidaAtual->tamanhoSequencia; i++){
                 if (dicaAtual[i] == 'C')
@@ -118,11 +125,26 @@ void novoJogo(Jogo *partidaAtual){
                 getchar();
                 return;
             }
-           
+
             printf("\n");
         }
     }
 
+
+void exibeHistorico(Jogo *partidaAtual, char dicaAtual[]){
+
+    printf("\nResultado:\n");
+        for (int i = 0; i < partidaAtual->tentativasUsadas; i++) {
+            printf("Rodada %d:  ", i+1);
+            for (int j = 0; j < partidaAtual->tamanhoSequencia; j++) {
+                printf("%d ", partidaAtual->historicoJogadas[i][j]);
+            }
+        
+            //dica de cada rodada, comparando a tentativa com a sequencia secreta
+            comparaCombinacao(partidaAtual->historicoJogadas[i], partidaAtual->sequenciaSecreta, dicaAtual, partidaAtual->tamanhoSequencia);
+            printf("%s", dicaAtual);
+        printf("\n");
+}
 }
 
 //essa funcao devera comparar a tentativa do jogador com a senha e retornar um vetor dica. Nesse vetor primeiro virah primeiro o C, depois E, depois -. (ex: [C C E - -])
@@ -229,6 +251,14 @@ void liberaMatriz(int **matriz, int i){
         else
             continue;
 
-    free(matriz);
+    free(matriz);   
+}
+
+//liberar a memoria alocada para o jogo, incluindo a matriz de historico de jogadas e o vetor da sequencia secreta
+void liberarJogo(Jogo *partidaAtual){
+    if(partidaAtual->historicoJogadas != NULL)
+        liberaMatriz(partidaAtual->historicoJogadas, partidaAtual->maxTentativas);
+    if(partidaAtual->sequenciaSecreta != NULL)
+        free(partidaAtual->sequenciaSecreta);
 }
 
