@@ -1,4 +1,5 @@
 #include "jogo.h"
+#include "ranking.h"
 
 int main(void){
     srand(time(NULL)); //semente para gerar numeros aleatorios
@@ -41,11 +42,18 @@ int main(void){
                 break;
             case 'S':
             case 's':
-                //salvaJogo();
+                if(partidaAtual.nivel == 0){
+                    printf("\nNenhum jogo em andamento para salvar.\n");
+                }else{
+                    salvaJogo(&partidaAtual);
+                    limparBuffer();
+                    getchar();
+                }
                 break;
             case 'R':
             case 'r':
-                exibeRanking();
+                exibirRanking();
+                getchar();
                 break;
             case 'X':
             case 'x':

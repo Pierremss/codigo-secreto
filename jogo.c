@@ -1,4 +1,5 @@
 #include "jogo.h"
+#include "ranking.h"
 
 void limparBuffer(void) {
     int c;
@@ -50,6 +51,66 @@ void exibeRanking(){
     // implementar a logica do ranking
 }
 
+// Salva a partida atual em texto no arquivo .cor escolhido pelo usuario.
+void salvaJogo(Jogo *partidaAtual){
+    // char nomeArquivo[TAM + 5];
+    // char caminhoArquivo[TAM + 9];
+
+    // printf("\nDigite o nome do arquivo: ");
+    // scanf("%50s", nomeArquivo);
+
+    // snprintf(caminhoArquivo, sizeof(caminhoArquivo), "%s.cor", nomeArquivo);
+
+    char nomeArquivo[TAM + 5]; //mais cinco porque vai ter o .cor e o \0 no final da string
+
+    printf("\nDigite o nome do arquivo (no maximo 50 caracteres): ");
+    scanf("%50s", nomeArquivo);
+    strcat(nomeArquivo, ".cor");
+
+    FILE *arquivo = fopen(nomeArquivo, "w");
+    if (arquivo == NULL) {
+        printf("\nErro ao abrir o arquivo para salvar o jogo.\n");
+        return;
+    }
+
+    // Linha 1: nome do jogador.
+    fprintf(arquivo, "%s\n", partidaAtual->nomeJogador);
+
+    // Linha 2: nivel escolhido como letra.
+    if (partidaAtual->nivel == 1)
+        fprintf(arquivo, "F\n");
+    else if (partidaAtual->nivel == 2)
+        fprintf(arquivo, "M\n");
+    else if (partidaAtual->nivel == 3)
+        fprintf(arquivo, "D\n");
+    else
+        fprintf(arquivo, "?\n");
+
+    // Linha 3: sequencia correta da senha secreta.
+    for (int i = 0; i < partidaAtual->tamanhoSequencia; i++) {
+        fprintf(arquivo, "%d", partidaAtual->sequenciaSecreta[i]);
+        if (i < partidaAtual->tamanhoSequencia - 1)
+            fprintf(arquivo, " ");
+    }
+    fprintf(arquivo, "\n");
+
+    // Linha 4: quantidade de tentativas ja jogadas.
+    fprintf(arquivo, "%d\n", partidaAtual->tentativasUsadas);
+
+    // Linha 5 em diante: historico de tentativas, uma por linha.
+    for (int i = 0; i < partidaAtual->tentativasUsadas; i++) {
+        for (int j = 0; j < partidaAtual->tamanhoSequencia; j++) {
+            fprintf(arquivo, "%d", partidaAtual->historicoJogadas[i][j]);
+            if (j < partidaAtual->tamanhoSequencia - 1)
+                fprintf(arquivo, " ");
+        }
+        fprintf(arquivo, "\n");
+    }
+
+    fclose(arquivo);
+    printf("\nJogo salvo em %s\n", nomeArquivo);
+}
+
 //nessa funcao eu vou chamar o alocarVetor() e inicializar a sequencia secreta aleatoriamente dependendo do nivel
 void geraSequenciaAleatoria(Jogo *partidaAtual){ 
     partidaAtual->sequenciaSecreta = alocaVetor(partidaAtual->tamanhoSequencia); //tamanho sequencia sera o tamanho do vetor (pode ser 4, 5 ou 6)
@@ -75,14 +136,14 @@ void novoJogo(Jogo *partidaAtual){
 
     partidaAtual->historicoJogadas = alocaMatriz(partidaAtual->maxTentativas, partidaAtual->tamanhoSequencia); //aloca a matriz de historico de jogadas
 
-     //com tudo pronto, agora vou comecar a partida
+    //com tudo pronto, agora vou comecar a partida
     jogo(partidaAtual);
 }
 void jogo(Jogo *partidaAtual){
           
     int tentativaAtual[partidaAtual->tamanhoSequencia];
     char dicaAtual[partidaAtual->tamanhoSequencia + 1];
-    
+
     //exibe o historico cseja uma partida em andamento, ou seja, se o jogador ja tiver feito alguma tentativa
     if(partidaAtual->tentativasUsadas > 0)
             exibeHistorico(partidaAtual, dicaAtual);
@@ -111,7 +172,7 @@ void jogo(Jogo *partidaAtual){
         partidaAtual->tentativasUsadas++; // incrementando o contador de tentativas usadas
         // exibeHistorico(partidaAtual, dicaAtual);
 
-            exibeHistorico(partidaAtual, dicaAtual);
+        exibeHistorico(partidaAtual, dicaAtual);
 
          //verificando se o jogador ganhou
             int win = 0;
@@ -121,6 +182,7 @@ void jogo(Jogo *partidaAtual){
             }
             if(win == partidaAtual->tamanhoSequencia){
                 printf("\n\nParabéns! Você acertou a sequência secreta!\n");
+                salvarRanking(*partidaAtual);
                 limparBuffer();
                 getchar();
                 return;

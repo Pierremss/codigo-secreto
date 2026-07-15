@@ -8,12 +8,12 @@
 
 #define TAM 51
 
-// Struct do arquivo de ranking
-typedef struct {
-    char nome[TAM];
-    int nivel;
-    int tentativas;
-} Ranking;
+// // Struct do arquivo de ranking
+// typedef struct {
+//     char nome[TAM];
+//     int nivel;
+//     int tentativas;
+// } Ranking;
 
 // Struct do jogo
 typedef struct {
@@ -48,7 +48,7 @@ void liberarJogo(Jogo *partidaAtual);
 
 // Funções planejadas (protótipos para quando você for implementar)
 // void carregaJogo(Jogo *jogo, char nomeArquivo[TAM]);
-// void salvaJogo(Jogo *jogo, char nomeArquivo[TAM]);
+void salvaJogo(Jogo *jogo);
 // void atualizaRanking(char nome[TAM], int nivel, int tentativas);
 void exibeHistorico(Jogo *jog, char dicaAtual[]);
 
