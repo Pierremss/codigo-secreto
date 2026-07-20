@@ -1,3 +1,6 @@
+// Nome: Pierre Miguel Silveira Silva Franco
+// Matrícula: 26.1.4061
+
 #ifndef RANKING_H
 #define RANKING_H
 

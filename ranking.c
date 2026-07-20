@@ -1,39 +1,42 @@
+// Nome: Pierre Miguel Silveira Silva Franco
+// Matrícula: 26.1.4061
+
 #include "ranking.h"
 #include "jogo.h"
 
-// Compara dois registros para ordenar primeiro por tentativas, depois por nivel e depois por nome.
-static int compararRanking(Ranking a, Ranking b){
+//compara dois registros para ordenar primeiro por tentativas, depois por nivel e depois por nome.
+int compararRanking(Ranking a, Ranking b){
     if (a.tentativas != b.tentativas)
-        return a.tentativas < b.tentativas;
+        return a.tentativas < b.tentativas; //se a quantidade de tentativas for menor, o registro a vem antes do registro b
 
     if (a.nivel != b.nivel)
-        return a.nivel > b.nivel;
-
-    return strcmp(a.nome, b.nome) < 0;
+        return a.nivel > b.nivel; //se o nivel for maior, o registro a vem antes do registro b
+        
+    return 0; //se for tudo igual, mantem a ordem original (nao troca)
 }
 
-// Insere um novo registro no vetor na posicao correta, mantendo a ordem do ranking.
-static void inserirOrdenado(Ranking ranking[], int *quantidade, Ranking novoRanking){
+//innsere um novo registro no vetor na posicao correta, mantendo a ordem do ranking
+void inserirOrdenado(Ranking ranking[], int *quantidade, Ranking novoRanking){
     int posicao = *quantidade;
 
-    // Desloca os elementos menores para abrir espaco para o novo registro.
+    //desloca os elementos menores para abrir espaco para o novo registro
     while (posicao > 0 && compararRanking(novoRanking, ranking[posicao - 1])) {
-        if (posicao < TOP_RANKING)
-            ranking[posicao] = ranking[posicao - 1];
+        if (posicao < TOP_RANKING) //garante que nao vai acessar posicao fora do vetor
+            ranking[posicao] = ranking[posicao - 1]; //desloca o registro para a proxima posicao
         posicao--;
     }
 
-    // Grava o novo registro apenas se ele ainda estiver dentro do Top 10.
+    //grava o novo registro apenas se ele ainda estiver dentro do Top 10
     if (posicao < TOP_RANKING) {
         ranking[posicao] = novoRanking;
-        if (*quantidade < TOP_RANKING)
+        if (*quantidade < TOP_RANKING) //se ainda nao atingiu o limite de 10 registros, incrementa a quantidade
             (*quantidade)++;
     }
 }
 
-// Le todos os registros salvos no arquivo binario e monta o ranking em memoria.
-static int carregarRanking(Ranking ranking[]){
-    FILE *arquivo = fopen("ranking.bin", "rb");
+//le todos os registros salvos no arquivo binario e monta o ranking em memoria
+int carregarRanking(Ranking ranking[]){
+    FILE *arquivo = fopen("ranking.rnk", "rb");
     if (arquivo == NULL)
         return 0;
 
@@ -41,15 +44,15 @@ static int carregarRanking(Ranking ranking[]){
     int quantidade = 0;
 
     while (fread(&atual, sizeof(Ranking), 1, arquivo) == 1)
-        inserirOrdenado(ranking, &quantidade, atual);
+        inserirOrdenado(ranking, &quantidade, atual); //ordenando so de precaocao, caso o arquivo binario por algum motivo esteja desordenado
 
     fclose(arquivo);
     return quantidade;
 }
 
-// Regrava o arquivo binario com o ranking ja ordenado.
-static void salvarRankingOrdenado(Ranking ranking[], int quantidade){
-    FILE *arquivo = fopen("ranking.bin", "wb");
+//regrava o arquivo binario com o ranking ja ordenado
+void salvarRankingOrdenado(Ranking ranking[], int quantidade){
+    FILE *arquivo = fopen("ranking.rnk", "wb");
     if (arquivo == NULL) {
         printf("Erro ao abrir o arquivo de ranking.\n");
         return;
@@ -59,8 +62,8 @@ static void salvarRankingOrdenado(Ranking ranking[], int quantidade){
     fclose(arquivo);
 }
 
-// Verifica se o novo jogador merece entrar no Top 10 quando o ranking ja esta cheio.
-static int entraNoRanking(Ranking novoRanking, Ranking ultimoRanking){
+//verifica se o novo jogador merece entrar no Top 10 quando o ranking ja esta cheio
+int entraNoRanking(Ranking novoRanking, Ranking ultimoRanking){
     if (novoRanking.tentativas < ultimoRanking.tentativas)
         return 1;
 
@@ -76,36 +79,36 @@ static int entraNoRanking(Ranking novoRanking, Ranking ultimoRanking){
     return strcmp(novoRanking.nome, ultimoRanking.nome) < 0;
 }
 
-// Salva o resultado da partida, insere no ranking se necessario e grava tudo ordenado.
+//salva o resultado da partida, insere no ranking se necessario e grava tudo ordenado
 int salvarRanking(Jogo jogoAtual){
     Ranking ranking[TOP_RANKING];
-    int quantidade = carregarRanking(ranking);
+    int quantidade = carregarRanking(ranking); 
     Ranking novoRanking;
 
-    // Copia os dados da partida para a estrutura que sera salva no ranking.
+    //copia os dados da partida para a estrutura que sera salva no ranking
     strcpy(novoRanking.nome, jogoAtual.nomeJogador);
     novoRanking.nivel = jogoAtual.nivel;
     novoRanking.tentativas = jogoAtual.tentativasUsadas;
 
-    // Se o ranking estiver cheio, so continua se o novo resultado for melhor que o ultimo.
+    //se o ranking estiver cheio, so continua se o novo resultado for melhor que o ultimo
     if (quantidade == TOP_RANKING && !entraNoRanking(novoRanking, ranking[TOP_RANKING - 1]))
-        return 0;
+        return 1; //se o jogador nao entrou no ranking, retorna 1 para informar que nao foi adicionado
 
-    // Insere o novo registro na posicao correta.
+    //insere o novo registro na posicao correta
     inserirOrdenado(ranking, &quantidade, novoRanking);
 
-    // Garante que o arquivo nunca passe de 10 registros.
+    //garante que o arquivo nunca passe de 10 registros
     if (quantidade > TOP_RANKING)
         quantidade = TOP_RANKING;
 
-    // Grava o ranking final ja ordenado no arquivo binario.
+    //grava o ranking final ja ordenado no arquivo binario
     salvarRankingOrdenado(ranking, quantidade);
     return 0;
 }
 
-// Abre o arquivo binario e mostra o ranking salvo na ordem em que foi gravado.
+//abre o arquivo binario e mostra o ranking salvo na ordem em que foi gravado
 void exibirRanking(void){
-    FILE *arquivo = fopen("ranking.bin", "rb");
+    FILE *arquivo = fopen("ranking.rnk", "rb");
     if (arquivo == NULL) {
         printf("\nNenhum ranking encontrado.\n");
         return;
@@ -117,7 +120,7 @@ void exibirRanking(void){
 
     printf("\n==============================\nRANKING\n==============================\n");
 
-    // Lê cada registro do arquivo e imprime na tela.
+    //le cada registro do arquivo e imprime na tela
     while (fread(&ranking, sizeof(Ranking), 1, arquivo) == 1) {
         printf("%d. Jogador: %s | Nível: %d | Tentativas: %d\n",
                posicao,
@@ -128,10 +131,12 @@ void exibirRanking(void){
         registrosEncontrados = 1;
     }
 
-    // Caso o arquivo exista, mas nao tenha dados validos.
+    //caso o arquivo exista, mas nao tenha dados validos
     if (!registrosEncontrados) {
         printf("Nenhum ranking encontrado.\n");
     }
 
+    printf("\nAperte Enter para voltar ao menu principal...\n");
+    getchar();
     fclose(arquivo);
 }

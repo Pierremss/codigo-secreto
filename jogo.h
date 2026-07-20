@@ -1,3 +1,6 @@
+// Nome: Pierre Miguel Silveira Silva Franco
+// Matrícula: 26.1.4061
+
 #ifndef JOGO_H
 #define JOGO_H
 
@@ -42,12 +45,12 @@ void jogo(Jogo *partidaAtual);
 void exibeMenuPrincipal();
 void exibeAjuda();
 void exibeRanking();
-char* comparaCombinacao(int tentativa[], int secreta[], char dica[], int tamanho);
+void comparaCombinacao(int tentativa[], int secreta[], char dica[], int tamanho);
 void definirDifuculdade(Jogo *partidaAtual);
 void liberarJogo(Jogo *partidaAtual);
 
 // Funções planejadas (protótipos para quando você for implementar)
-// void carregaJogo(Jogo *jogo, char nomeArquivo[TAM]);
+int carregaJogo(Jogo *jogo);
 void salvaJogo(Jogo *jogo);
 // void atualizaRanking(char nome[TAM], int nivel, int tentativas);
 void exibeHistorico(Jogo *jog, char dicaAtual[]);
